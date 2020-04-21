@@ -60,7 +60,7 @@ class Option extends Model
     }
 
     /**
-     * Set a given option value.
+     * Set and return the given option value/s.
      *
      * @param  array|string  $key
      * @param  mixed   $value
@@ -74,7 +74,7 @@ class Option extends Model
             self::updateOrCreate(['key' => $key], ['value' => $value]);
         }
 
-        // @todo: return the option
+        return self::whereIn('key', $keys)->get();
     }
 
     /**
@@ -86,5 +86,34 @@ class Option extends Model
     public function remove($key)
     {
         return (bool) self::where('key', $key)->delete();
+    }
+
+    /**
+     * Get or insert the specified option value.
+     *
+     * Note: the intent here is to always have
+     * a populated list of available options.
+     *
+     * @param  string  $key
+     * @param  mixed   $default
+     * @return mixed
+     */
+    public function getsert($key, $default = false)
+    {
+        if ($option = self::where('key', $key)->first()) {
+            return $option->value;
+        }
+
+        return self::set($key, $default);
+    }
+
+    /**
+     * Get the list of option values.
+     *
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function list()
+    {
+        return self::all();
     }
 }
